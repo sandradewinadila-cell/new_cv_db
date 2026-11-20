@@ -1,57 +1,42 @@
-/**
- * assets/js/cv-export.js
- * Logika ekspor CV ke format PDF menggunakan html2pdf.js
- */
-
 document.addEventListener("DOMContentLoaded", function () {
-  const downloadBtn = document.getElementById("btn-download-pdf");
+  const btnDownload = document.getElementById("btn-download-pdf");
 
-  if (!downloadBtn) return;
+  if (btnDownload) {
+    btnDownload.addEventListener("click", function () {
+      // 1. Ubah teks tombol saat proses berjalan
+      const originalText = btnDownload.innerText;
+      btnDownload.innerText = "Memproses PDF...";
+      btnDownload.disabled = true;
 
-  downloadBtn.addEventListener("click", function () {
-    const element = document.getElementById("cv-content");
+      // 2. Target elemen yang akan di-convert (seluruh konten CV)
+      const element = document.getElementById("cv-content");
 
-    if (!element) {
-      alert("Konten CV tidak ditemukan!");
-      return;
-    }
+      // 3. Konfigurasi html2pdf yang aman dan stabil
+      const opt = {
+        margin: 10, // Margin 10mm
+        filename: "CV_Nadila_Sandra_Dewi.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
 
-    // Ubah status dan teks tombol saat memproses
-    const originalText = downloadBtn.innerHTML;
-    downloadBtn.disabled = true;
-    downloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses PDF...';
-
-    // Opsi konfigurasi html2pdf
-    const opt = {
-      margin: [8, 8, 8, 8], // Margin dalam satuan mm
-      filename: "CV_Nadila_Sandra_Dewi.pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-      },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-    };
-
-    // Eksekusi generate PDF
-    html2pdf()
-      .set(opt)
-      .from(element)
-      .save()
-      .then(function () {
-        // Kembalikan tombol ke keadaan semula setelah selesai
-        downloadBtn.disabled = false;
-        downloadBtn.innerHTML = originalText;
-      })
-      .catch(function (error) {
-        console.error("Gagal mengekspor PDF:", error);
-        alert("Terjadi kesalahan saat membuat file PDF.");
-        downloadBtn.disabled = false;
-        downloadBtn.innerHTML = originalText;
-      });
-  });
+      // 4. Generate dan simpan PDF
+      html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .then(function () {
+          // 5. Kembalikan tombol ke kondisi semula setelah berhasil
+          btnDownload.innerText = originalText;
+          btnDownload.disabled = false;
+        })
+        .catch(function (err) {
+          // Handle error jika gagal
+          console.error("Error generating PDF:", err);
+          btnDownload.innerText = originalText;
+          btnDownload.disabled = false;
+          alert("Gagal membuat PDF. Pastikan semua gambar memiliki URL yang valid (CORS).");
+        });
+    });
+  }
 });
